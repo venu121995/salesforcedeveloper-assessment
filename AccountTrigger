@@ -1,0 +1,22 @@
+trigger AccountTrigger on Account (before update) {
+    //As we can't get any related contact record in insert event hence firing on update. We can't edit records on after events hence on before
+    if(Trigger.isUpdate && Trigger.isBefore){
+        //Getting all the contacts related to modified account coming from trigger.new
+        List<contact> contactList=[SELECT Id,AccountId FROM Contact WHERE AccountId in :trigger.newMap.keySet()];
+        Map<Id,Integer> conCountMap=new Map<Id,Integer>();
+        //Counting related Contacts and storing in Map
+        for(Contact con: contactList){
+            if(conCountMap.containskey(con.accountId)){
+                Integer count=conCountMap.get(con.accountId);
+                count++;
+                conCountMap.put(con.accountid,count);
+            }
+            else{
+                conCountMap.put(con.accountid,1);
+            }
+        }
+        for(Account acc: Trigger.new){
+            acc.Number_Of_Contacts__c=conCountMap.get(acc.id);
+        }
+    }
+}
