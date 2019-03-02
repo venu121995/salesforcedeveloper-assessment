@@ -1,0 +1,52 @@
+************************Apex Controller************************
+//AccountListController.apxc
+public class AccountListController {
+    @AuraEnabled
+    public static List <Account> getAccounts() {
+        //SOQL query to return first 10 recently created account
+        return [SELECT Id, name, createdDate FROM Account ORDER BY createdDate ASC LIMIT 10];
+    }
+}
+
+************************Lightning Component************************
+//AccountList
+//AccountList.cmp
+<aura:component controller="AccountListController">
+    <aura:attribute type='List' name='accList'/>
+    <aura:handler name="init" value="{!this}" action="{! c.doInit}"/>
+    <lightning:card title="Recently Created Accounts">
+        <p class="slds-p-horizontal_small">
+            <aura:iteration items="{!v.accList}" var="account">
+                <lightning:recordViewForm recordId="{!account.Id}" objectApiName="Account">
+                    <div class="slds-box slds-theme_default">
+                        Account Name<br />
+                        <a href="{!'/one/one.app?#/sObject/'+ account.Id + '/view'}" target="_blank">{! account.Name }</a> <br />
+                        Created Date<br />
+                        <lightning:formattedTime value="{!account.CreatedDate}" />
+                    </div>
+                </lightning:recordViewForm>
+                
+                <br />
+            </aura:iteration>
+        </p>
+    </lightning:card>
+</aura:component>
+
+//AccountListController.js
+({
+    doInit : function(component, event, helper) {
+        //Calling Server side controller
+        var action = component.get('c.getAccounts');       
+        action.setCallback(this, function(data){
+            component.set('v.accList',data.getReturnValue());
+        });       
+        $A.enqueueAction(action);      
+    }
+})
+
+************************Lightning Application************************
+//RecentAccounts.app
+<aura:application extends="force:slds">
+    <!--Including component in application -->
+    <c:AccountList/>
+</aura:application>
