@@ -1,0 +1,35 @@
+//Sample Rest Callout
+// We can test this code by executing below code in anonymous window in developer console
+//SampleRestCallout src=new SampleRestCallout();   src.restMethod();
+
+public class SampleRestCallout {
+    public void restMethod(){
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        //We should register this site in Remotesite Settings in setup
+        request.setEndpoint('https://postman-echo.com/get?foo1=bar1&foo2=bar2');
+        request.setMethod('GET');
+        HttpResponse response = http.send(request);
+        // If the request is successful, parse the JSON response.
+        if (response.getStatusCode() == 200) {
+            // Deserialize the JSON string into collections of primitive data types.
+            Map<String, Object> results = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+            System.debug('**************Main Json Results**************');
+            System.debug(results);
+            Map<String,Object> argsMap = (Map<String,Object>) results.get('args');
+            Map<String,Object> headersMap = (Map<String,Object>) results.get('headers');
+            System.debug('**************Main Results Key Value Pair**************');
+            for(Object result:results.keyset()){
+                System.debug(result+' => '+results.get((String)result));
+            }
+            System.debug('**************Args Key Value Pairs**************');
+            for(Object arg:argsMap.keyset()){
+                System.debug(arg+' => '+argsMap.get((String)arg));
+            }
+            System.debug('**************Headers Key Value Pairs**************');
+            for(Object header:headersMap.keyset()){
+                System.debug(header+' => '+headersMap.get((String)header));
+            }
+        }
+    }
+}
